@@ -5,7 +5,7 @@ Explore the rich tapestry of music through our in-depth analysis of Spotify data
 
 In our initial phase, we kickstarted our analysis with the [dataset](https://www.kaggle.com/datasets/nicholaselkan/spotify) sourced from [Kaggle](https://www.kaggle.com/). As our exploration deepened, it became apparent that further data enrichment was necessary. Consequently, we employed the [Spotify](https://open.spotify.com/) library in Python, enabling us to extract comprehensive artist and album information.
 
-To install the Spotify library, just use this command in your command prompt:
+To install the [Spotify library](https://pypi.org/project/spotify/), just use this command in your command prompt:
 ```bash
 pip install spotify
 ```
@@ -16,9 +16,21 @@ Transitioning to the following phase, we undertook the construction of a databas
 
 After carefully refining and optimizing the data, we harnessed the power of the SQLAlchemy library in Python. This process led to the meticulous development of our database infrastructure, ensuring efficiency and precision throughout.
 
-To install the SQLAlchemy library, just use this command in your command prompt:
+To install the [SQLAlchemy library](https://pypi.org/project/SQLAlchemy/), just use this command in your command prompt:
 ```bash
 pip install SQLAlchemy
+```
+## Additional Libraries:
+
+Below, you'll find a list of other libraries that have been employed in this project. To install them, simply copy and execute the commands provided in your command prompt (cmd). This will ensure the proper setup of all required dependencies.
+- [time](https://docs.python.org/3/library/time.html)
+- [pandas](https://pandas.pydata.org/)
+```bash
+pip install pandas
+```
+- [NumPy](https://numpy.org/)
+```bash
+pip install numpy
 ```
 ## Authors
 
@@ -26,4 +38,3 @@ pip install SQLAlchemy
 - [Milad Nooraei](https://github.com/MiladNooraei)
 - [Zahra Honarvar](https://github.com/zahra-honarvar)
 - [Ali Mousavi](https://github.com/Alimousavi48)
-
