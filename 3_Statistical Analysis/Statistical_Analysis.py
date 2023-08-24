@@ -4,12 +4,17 @@ import mysql.connector
 import streamlit as st
 import plotly.express as px
 
+st.set_page_config(
+    page_title='Spotify Project',
+)
+st.title("Statistical Analysis on Spotify Data")
+
 ################################### Connecting to Database ###################################
 my_database = mysql.connector.connect(
   host = "127.0.0.1",
   port = "3306",
   user = "root",
-  password = "Your Password",
+  password = "farzansql",
   auth_plugin = "mysql_native_password",
   database = "spotify"
 )
@@ -29,7 +34,7 @@ artist_album_data = cursor.fetchall()
 artist_album_df = pd.DataFrame(artist_album_data, columns = [column[0] for column in cursor.description])
 artist_name_list = artist_df["artist_name"].unique().tolist()
 
-st.title("Artist Name Selection")
+st.subheader("Artist Name Selection")
 selected_artist = st.selectbox("Select an artist name:", artist_name_list)
 merged_df = pd.merge(artist_df, artist_album_df, on = "artist_id")
 final_df = pd.merge(merged_df, album_df, on = "album_id")
@@ -42,7 +47,7 @@ fig.update_traces(texttemplate = "%{text}", textposition = "outside")
 fig.update_layout(xaxis_title = "Album Name", yaxis_title = "Popularity")
 fig.update_xaxes(tickangle = -45)
 
-st.title("Top Albums by Artist")
+st.subheader("Top Albums by Artist")
 st.write(f"You selected: {selected_artist}")
 st.plotly_chart(fig, use_container_width = True)
 
@@ -58,7 +63,7 @@ track_df = pd.DataFrame(track_data, columns=[column[0] for column in cursor.desc
 track_df = track_df[["genre_id", "title", "popularity"]]
 genre_name_list = genre_df["genres_name"].unique().tolist()
 
-st.title("Genre Name Selection")
+st.subheader("Genre Name Selection")
 selected_genre = st.selectbox("Select an genre name:", genre_name_list)
 selected_genre_id = genre_df[genre_df["genres_name"] == selected_genre]["genre_id"].values[0]
 selected_tracks = track_df[track_df["genre_id"] == selected_genre_id]
@@ -69,8 +74,54 @@ fig.update_layout(annotations = [dict(x = popularity, y = title, text = str(popu
 st.plotly_chart(fig)
 
 ################################### Exploring the Top 10 Most Popular Artists by Genre ###################################
+st.subheader('Question 4')
+# get data
+query = """
+SELECT artist_name, popularity, genres_name FROM spotify.artist_genre
+join artist on artist.artist_id = artist_genre.artist_id
+join genre on genre.genre_id = artist_genre.genre_id;
+"""
+
+cursor.execute(query)
+rows = cursor.fetchall()
+
+column_names = [column[0] for column in cursor.description]
+artistGenre_popularityBased = pd.DataFrame(rows, columns = column_names)
+
+# get genre name from user
+genre_selected = st.selectbox('Select genre:', sorted(artistGenre_popularityBased['genres_name'].unique()), index=1463, key='k1')
+top_10_artists = artistGenre_popularityBased.query('genres_name == @genre_selected').sort_values(by=['popularity', 'artist_name'], ascending=True)[:10]
+
+st.write(f"Most popular artists in {genre_selected} genre:")
+# create a bar chart using st.bar_chart
+st.bar_chart(top_10_artists[['artist_name', 'popularity']].set_index('artist_name'))
 
 ################################### Exploring Beloved Albums: A Comparative Analysis of Five Notable Releases in the Year ###################################
+st.subheader('Question 5')
+# get data
+query = """
+SELECT album_name, artists, release_date, popularity FROM spotify.album;
+"""
+
+cursor.execute(query)
+rows = cursor.fetchall()
+
+column_names = [column[0] for column in cursor.description]
+album_yearBased = pd.DataFrame(rows, columns = column_names)
+album_yearBased['release_date'] = pd.to_datetime(album_yearBased['release_date'], format='%Y-%m-%d', errors='coerce')
+
+# get the min and max year of the release_date column
+min_year, max_year = map(int, album_yearBased['release_date'].dt.year.agg(['min', 'max']))
+
+year_selected = st.slider(
+    'Select a range of years:',
+    min_year, max_year, (1990, 2010))
+st.write(f'Most popular albums from **{year_selected[0]}** to **{year_selected[1]}**:')
+
+# filter dataFrame by selected years
+top_5_albums = album_yearBased.query('release_date.dt.year >= @year_selected[0] and release_date.dt.year <= @year_selected[1]').sort_values(by=['popularity', 'release_date'], ascending=False)[:5]
+
+st.dataframe(top_5_albums.set_index('album_name').astype({'release_date': 'str'}))
 
 ###################################  Study of the Top Ten Artists with the Most Evocative Lyrics ###################################
 
