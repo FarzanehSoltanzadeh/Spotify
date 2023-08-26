@@ -156,7 +156,10 @@ option=st.selectbox('select an option:',options=all_optiona)
 result=result.sort_values(by=option,ascending=False).reset_index()
 
 fig = px.bar(result.loc[:9,['artist_name',option]], x="artist_name", y=option,color = "artist_name",labels = {"artist_name": "Artist Name"},title =f"top 10 singers based on {option}")
-st.plotly_chart(fig, use_container_width = True)
+fig.update_xaxes(tickangle = -45)
+for i in fig.data:
+    fig.add_annotation(x=i.x[np.where(i.y == max(i.y))[0][0]], y=max(i.y), text=str(max(i.y)), showarrow=False)
+st.plotly_chart(fig, use_container_width=True)
 
 ###################################  A Study of Annual Distribution of Artist Activity (Total Album Counts) ###################################
 
