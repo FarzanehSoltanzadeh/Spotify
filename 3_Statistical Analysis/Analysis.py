@@ -1,5 +1,6 @@
 ################################### Importing libraries ###################################
 import pandas as pd
+import numpy as np
 import mysql.connector
 import streamlit as st
 import plotly.express as px
@@ -123,7 +124,39 @@ top_5_albums = album_yearBased.query('release_date.dt.year >= @year_selected[0] 
 
 st.dataframe(top_5_albums.set_index('album_name').astype({'release_date': 'str'}))
 
-###################################  Study of the Top Ten Artists with the Most Evocative Lyrics ###################################
+#  Study of the Top Ten Artists with the Most Evocative Lyrics 
+st.subheader('Question 6')
+st.subheader('Study of the Top Ten Artists with the Most Evocative Lyrics:')
+
+cursor.execute('select * from track_lyric;')
+track_lyric = cursor.fetchall()
+track_lyric = pd.DataFrame(track_lyric, columns = [column[0] for column in cursor.description])
+cursor.execute("select * from artist;")
+artist = cursor.fetchall()
+artist = pd.DataFrame(artist, columns = [column[0] for column in cursor.description])
+cursor.execute("select * from track_info;")
+track_info = cursor.fetchall()
+track_info = pd.DataFrame(track_info, columns = [column[0] for column in cursor.description])
+
+
+artist_lyric_track=pd.merge(artist,track_info,how='inner',on='artist_id')
+artist_lyric_track=pd.merge(artist_lyric_track,track_lyric,how='inner',on='track_id')
+artist_lyric_track=artist_lyric_track[['artist_id','artist_name','track_id','anger','disgust','fear','joy','sadness','surprise','trust','negative','positive']]
+
+x=artist_lyric_track.mask(artist_lyric_track.select_dtypes(include=np.number) <= 0)
+artist_lyric_track.loc[:,'anger':]=x
+
+artist_lyric_track=artist_lyric_track.groupby(by='artist_id')[['anger','disgust','fear','joy','sadness','surprise','trust','negative','positive']].sum()
+
+result=pd.merge(artist_lyric_track,artist,how='inner',on='artist_id')
+result=result[['artist_id','artist_name','anger','disgust','fear','joy','sadness','surprise','trust','negative','positive']]
+
+all_optiona=result.columns.to_list()[2:]
+option=st.selectbox('select an option:',options=all_optiona)
+result=result.sort_values(by=option,ascending=False).reset_index()
+
+fig = px.bar(result.loc[:9,['artist_name',option]], x="artist_name", y=option,color = "artist_name",labels = {"artist_name": "Artist Name"},title =f"top 10 singers based on {option}")
+st.plotly_chart(fig, use_container_width = True)
 
 ###################################  A Study of Annual Distribution of Artist Activity (Total Album Counts) ###################################
 
