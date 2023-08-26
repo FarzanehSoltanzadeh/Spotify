@@ -161,9 +161,146 @@ for i in fig.data:
     fig.add_annotation(x=i.x[np.where(i.y == max(i.y))[0][0]], y=max(i.y), text=str(max(i.y)), showarrow=False)
 st.plotly_chart(fig, use_container_width=True)
 
-###################################  A Study of Annual Distribution of Artist Activity (Total Album Counts) ###################################
+###################################  A Study of Annual Distribution of Artist Activity (Total Songs Counts) ###################################
+import streamlit as st
+import mysql.connector
+import pandas as pd
+import plotly.express as px
+
+# Connect to the MySQL database
+def connect_to_db():
+    connection = mysql.connector.connect(
+        host="127.0.0.1",
+        port="3306",
+        user="root",
+        password="@Li_123456",
+        auth_plugin="mysql_native_password",
+        database="spotify"
+    )
+    return connection
+
+# Fetch data from the database
+def fetch_data(connection):
+    query = """
+        SELECT YEAR(a.release_date) AS year, artist.artist_name, COUNT(DISTINCT ti.title) AS num_songs
+        FROM track_info ti
+        JOIN album a ON ti.album_id = a.album_id
+        JOIN artist ON ti.artist_id = artist.artist_id
+        GROUP BY YEAR(a.release_date), artist.artist_name
+        ORDER BY YEAR(a.release_date), artist.artist_name;
+    """
+    with connection.cursor(dictionary=True) as cursor:
+        cursor.execute(query)
+        data = cursor.fetchall()
+    return data
+
+# Streamlit app
+st.title("Song Activity Distribution")
+
+connection = connect_to_db()
+data = fetch_data(connection)
+
+# Convert data to a DataFrame
+df = pd.DataFrame(data)
+
+# Filter data by artist
+selected_artist = st.selectbox("Select Artist:", df['artist_name'].unique())
+filtered_data = df[df['artist_name'] == selected_artist]
+
+# Create a Plotly bar chart
+fig = px.bar(
+    filtered_data,
+    x='year',
+    y='num_songs',
+    title=f"Song Activity Distribution for {selected_artist}",
+    text='num_songs',  # Add text labels to the bars
+)
+
+# Display the numbers on the bars
+fig.update_traces(texttemplate='%{text}', textposition='outside')
+
+# Add a line trace to the chart
+fig.add_trace(px.line(filtered_data, x='year', y='num_songs').data[0])
+
+# Modify x-axis labels to show the years
+fig.update_layout(
+    xaxis_title="Year",
+    xaxis=dict(
+        tickmode='linear',
+        tickvals=filtered_data['year'],  # Set tick values to the unique years
+        ticktext=filtered_data['year'],  # Set tick text to the unique years
+    )
+)
+
+# Display the Plotly chart
+st.plotly_chart(fig, use_container_width=True)
+
 
 ################################### A Study of the Top 10 Explicit Songs ###################################
+
+import mysql.connector
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+# Database connection
+def connect_to_db():
+    connection = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="@Li_123456",
+        database="spotify"
+    )
+    return connection
+
+# Query for the most popular songs
+def get_popular_songs(explicit):
+    connection = connect_to_db()
+    cursor = connection.cursor()
+
+    explicit_value = 1 if explicit else 0
+    query = f"""
+        SELECT ti.track_id, ti.title, ti.popularity, ti.explicit
+        FROM track_info ti
+        WHERE ti.explicit = {explicit_value}
+        ORDER BY ti.popularity DESC
+        LIMIT 10
+    """
+    cursor.execute(query)
+    songs = cursor.fetchall()
+
+    cursor.close()
+    connection.close()
+
+    return songs
+
+# Streamlit app
+def main():
+    st.title("Top 10 Popular Songs")
+
+    # Create a radio button for song type selection
+    song_type = st.radio("Select Song Type", ("Explicit Songs", "Non-Explicit Songs"))
+
+    if song_type == "Explicit Songs":
+        songs = get_popular_songs(True)
+        st.subheader("Top 10 Popular Explicit Songs")
+    elif song_type == "Non-Explicit Songs":
+        songs = get_popular_songs(False)
+        st.subheader("Top 10 Popular Non-Explicit Songs")
+
+    # Create a pandas DataFrame for the song data
+    song_data = pd.DataFrame(songs, columns=["Track ID", "Title", "Popularity", "Explicit"])
+
+    # Create a Plotly bar chart
+    fig = px.bar(song_data, x="Title", y="Popularity", text="Popularity", title="Song Popularity")
+    fig.update_traces(texttemplate='%{text}', textposition='outside')
+
+    # Display the Plotly chart using Plotly's native Streamlit support
+    st.plotly_chart(fig)
+
+if __name__ == "__main__":
+    main()
+
 
 ################################### Close the Database connection ###################################
 cursor.close()
