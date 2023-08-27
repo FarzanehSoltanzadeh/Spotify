@@ -52,6 +52,40 @@ st.subheader("Top Albums by Artist")
 st.write(f"You selected: {selected_artist}")
 st.plotly_chart(fig, use_container_width = True)
 
+# #####################################  question 2: Most to least popular genres ###########################
+
+st.subheader("Most to least popular genres")
+cursor.execute('select * from genre;')
+genre = cursor.fetchall()
+genre = pd.DataFrame(genre, columns = [column[0] for column in cursor.description])
+
+cursor.execute('select * from track_info;')
+track_info = cursor.fetchall()
+track_info = pd.DataFrame(track_info, columns = [column[0] for column in cursor.description])
+
+
+genre_track=pd.merge(genre,track_info,how='inner',on='genre_id')
+genre_track=genre_track[['genre_id','genres_name','popularity']]
+genre_track=genre_track.groupby(by='genre_id')['popularity'].sum()
+genre_track=pd.merge(genre_track,genre,how='inner',on='genre_id')
+genre_track.sort_values(by='popularity',ascending=False)
+
+
+# this ?
+fig = px.pie(genre_track, values='popularity', names='genres_name')
+fig.update_traces(textposition='outside', textinfo='percent+label+text', insidetextorientation='horizontal')
+fig.update_layout(width=700, height=1400,showlegend=False)
+st.plotly_chart(fig)
+
+# or this? i prefer this
+fig = px.bar(genre_track.sort_values(by='popularity',ascending=False), x='genres_name', y='popularity',color = "popularity",labels = {"genres_name": "Genres Name"})
+fig.update_xaxes(tickangle = -45)
+fig.update_layout(width=1300, height=600)
+fig.update_traces(texttemplate='%{y}', textposition='outside')
+st.plotly_chart(fig)
+
+
+
 ################################### A Study of the Top 10 Chart-Topping Songs in Different Musical Categories ###################################
 cursor.execute("SELECT * FROM genre")
 genre_data = cursor.fetchall()
@@ -124,7 +158,8 @@ top_5_albums = album_yearBased.query('release_date.dt.year >= @year_selected[0] 
 
 st.dataframe(top_5_albums.set_index('album_name').astype({'release_date': 'str'}))
 
-#  Study of the Top Ten Artists with the Most Evocative Lyrics 
+
+##################################### Study of the Top Ten Artists with the Most Evocative Lyrics ##############
 st.subheader('Question 6')
 st.subheader('Study of the Top Ten Artists with the Most Evocative Lyrics:')
 
