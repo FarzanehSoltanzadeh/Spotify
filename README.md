@@ -87,7 +87,13 @@ Prior to engaging with the content and materials presented in this repository, a
 ## Additional Libraries:
 
 Below, you'll find a list of other libraries that have been employed in this project. To install them, simply copy and execute the commands provided in your command prompt (cmd). This will ensure the proper setup of all required dependencies.
+- [os](https://docs.python.org/3/library/os.html)
 - [time](https://docs.python.org/3/library/time.html)
+- [urllib.parse](https://docs.python.org/3/library/urllib.parse.html)
+- [patool](https://pypi.org/project/patool/)
+```bash
+pip install patool
+```
 - [pandas](https://pandas.pydata.org/)
 ```bash
 pip install pandas
