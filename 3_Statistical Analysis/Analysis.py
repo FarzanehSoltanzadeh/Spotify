@@ -185,7 +185,8 @@ def artists_with_emotional_lyrics_page():
         fig = px.bar(result.loc[:9, ["artist_name", option]], x = "artist_name", y = option, color = "artist_name", labels = {"artist_name": "Artist Name"}, title = f"Top 10 singers based on {option}")
         fig.update_xaxes(tickangle = -45)
         for i, value in enumerate(result[option][:10]):
-            fig.add_annotation(x=result["artist_name"][i], y = value, text = str(value), showarrow = False, yshift = 10)
+            fig.add_annotation(x = result["artist_name"][i], y = value, text = str(value), showarrow = False, yshift = 10)
+        fig.update_layout(showlegend = False)
         st.plotly_chart(fig, use_container_width = True)
 
 ###################################  A Study of Annual Distribution of Artist Activity (Total Songs Counts) ###################################
@@ -247,8 +248,8 @@ def top_ten_explicit_non_explicit_page():
     total_popularity = song_data["Popularity"].sum()
     song_data["Popularity_Percentage"] = (song_data["Popularity"] / total_popularity) * 100
 
-    fig = go.Figure(data = [go.Pie(labels = song_data["Title"], values = song_data["Popularity_Percentage"], textinfo = "label+percent", showlegend = False,)])
-    fig.update_layout(margin = dict(l = 0, r = 0, b = 0, t = 30), width = 800, height = 600,)
+    fig = go.Figure(data=[go.Bar(x = song_data["Title"], y = song_data["Popularity_Percentage"], text = song_data["Popularity"], textposition = "outside", marker = dict(color = px.colors.sequential.Reds, colorscale = "Viridis"),)])
+    fig.update_layout(xaxis_title = "Title", yaxis_title = "Popularity", title = "Popularity Percentage of Songs", xaxis_tickangle = -45, width = 800, height = 600,)
     st.plotly_chart(fig, use_container_width = True)
 
 ################################### The lyrical themes and content in rap music compared to other music genres ###################################
@@ -387,7 +388,7 @@ def song_suggestions_page():
 
 ################################### Create a dictionary to map page names to functions ###################################
 pages = {
-    "Top Five Albums of Each Artist": top_five_albums_page,
+    "Top 5 Albums of Each Artist": top_five_albums_page,
     "Popular Genres": popular_genres_page,
     "Top 10 Tracks in Various Genres": popular_tracks_in_different_genres_page,
     "Top 10 Artists in Each Genre": popular_artists_by_genre_page,
