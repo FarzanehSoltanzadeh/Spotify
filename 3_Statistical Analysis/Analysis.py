@@ -427,7 +427,159 @@ def factors_influencing_song_popularity_page():
 ################################### Personalized Mood-Based Music Selection ###################################
 def song_suggestions_page():
     st.subheader("Song Recommendations 🎵")
-    # Zahra To Do
+    
+    cursor.execute('select * from track_lyric;')
+    track_lyric = cursor.fetchall()
+    track_lyric = pd.DataFrame(track_lyric, columns = [column[0] for column in cursor.description])
+
+    cursor.execute('select * from track_info;')
+    track_info = cursor.fetchall()
+    track_info = pd.DataFrame(track_info, columns = [column[0] for column in cursor.description])
+
+    cursor.execute('select * from track_music;')
+    track_music = cursor.fetchall()
+    track_music = pd.DataFrame(track_music, columns = [column[0] for column in cursor.description])
+
+    cursor.execute('select * from artist;')
+    artist = cursor.fetchall()
+    artist = pd.DataFrame(artist, columns = [column[0] for column in cursor.description])
+    artist.drop(columns=['popularity'],inplace=True)
+
+
+    all_df=pd.merge(track_info,track_music,how='inner',on='track_id')
+    all_df=pd.merge(all_df,track_lyric,how='inner',on='track_id')
+    all_df=pd.merge(all_df,artist,how='inner',on='artist_id')
+
+    st.subheader('choose your mood, listen to the songs')
+    selected=st.multiselect('choose you mood(s):', ['sad','happy','relaxing','energetic','angry','dancing'], placeholder="Choose an option")
+
+    all_df=all_df[['track_id','title','artist_id','artist_name','popularity','loudness','danceability','energy','valence','anger','joy','sadness','negative','positive']]
+    all_df['loudness']+=np.abs(min(all_df['loudness']))
+    x=all_df.mask(all_df.select_dtypes(include=np.number) < 0)
+    all_df.loc[:,'popularity':]=x
+    all_df=all_df.sort_values(by='popularity',ascending=False).reset_index()
+
+
+    resault=pd.DataFrame([])
+    if all(mood in selected for mood in ['dancing', 'happy','energetic']):
+    resault=all_df.loc[(all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/2) & 
+    (all_df.valence>=(min(all_df.valence)+max(all_df.valence))/2) & 
+    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/3.5) & 
+    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/5) &
+    (all_df.energy>=(min(all_df.energy)+max(all_df.energy))/2)]
+
+    elif all(mood in selected for mood in ['dancing', 'happy','relaxing']):
+    resault=all_df.loc[(all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/1.5) & 
+    (all_df.valence>=(min(all_df.valence)+max(all_df.valence))/2) & 
+    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/3.5) & 
+    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/5) &
+    (all_df.loudness<=np.median(all_df.loudness)) &
+    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/1.2)]
+
+    elif all(mood in selected for mood in ['sad','energetic','angry']):
+    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/4) & 
+    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/4) & 
+    (all_df.anger>=(min(all_df.anger)+max(all_df.anger))/4) &
+    (all_df.energy>=(min(all_df.energy)+max(all_df.energy))/1.2)]
+
+    elif all(mood in selected for mood in ['sad','relaxing','angry']):
+    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/4) & 
+    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/4) &  
+    (all_df.anger>=(min(all_df.anger)+max(all_df.anger))/4) &
+    (all_df.loudness<=19) &
+    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/1.2)]
+
+    elif all(mood in selected for mood in ['sad','energetic']):
+    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/4) & 
+    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/3) & 
+    (all_df.energy>=(min(all_df.energy)+max(all_df.energy))/1.5)]
+
+    elif all(mood in selected for mood in ['sad','dancing']):
+    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/4) & 
+    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/3) & 
+    (all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/1.2)]
+
+    elif all(mood in selected for mood in ['angry','energetic']):
+    resault=all_df.loc[(all_df.anger>=(min(all_df.anger)+max(all_df.anger))/3) & 
+    (all_df.loudness>=20) &
+    (all_df.energy>=(min(all_df.energy)+max(all_df.energy))/1.5)]
+
+    elif all(mood in selected for mood in ['sad','relaxing']):
+    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/4) & 
+    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/4) &  
+    (all_df.loudness<=19) &
+    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/3)]
+
+    elif all(mood in selected for mood in ['sad','angry']):
+    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/3) & 
+    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/1.5) &  
+    (all_df.anger>=(min(all_df.anger)+max(all_df.anger))/1.5)]
+
+    elif all(mood in selected for mood in ['dancing', 'happy']):
+    resault=all_df.loc[(all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/1.2) & 
+    (all_df.valence>=(min(all_df.valence)+max(all_df.valence))/1.5) & 
+    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/3.5) & 
+    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/5)]
+
+    elif all(mood in selected for mood in ['energetic','happy']):
+    resault=all_df.loc[(all_df.valence>=(min(all_df.valence)+max(all_df.valence))/2) & 
+    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/3) & 
+    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/5) &
+    (all_df.energy>=(min(all_df.energy)+max(all_df.energy))/1.2)]
+
+    elif all(mood in selected for mood in ['relaxing','happy']):
+    resault=all_df.loc[(all_df.valence>=(min(all_df.valence)+max(all_df.valence))/1.5) & 
+    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/3) & 
+    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/5) &
+    (all_df.loudness<=19) &
+    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/2)]
+
+    elif all(mood in selected for mood in ['relaxing','dancing']):
+    resault=all_df.loc[(all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/1.5) & 
+    (all_df.loudness<15) &
+    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/4)]
+
+    elif 'sad' in selected:
+    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/3) & 
+    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/2)]
+
+    elif 'happy' in selected:
+    resault=all_df.loc[(all_df.valence>=(min(all_df.valence)+max(all_df.valence))/2) & 
+    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/2.5) & 
+    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/3)]
+
+    elif 'relaxing' in selected:
+    resault=all_df.loc[(all_df.loudness<15) &
+    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/4)]
+
+    elif 'energetic' in selected:
+    resault=all_df.loc[(all_df.energy>=(min(all_df.energy)+max(all_df.energy))/1.2)]
+
+    elif 'dancing' in selected:
+    resault=all_df.loc[(all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/2)]
+
+    elif 'angry' in selected:
+    resault=all_df.loc[(all_df.anger>=(min(all_df.anger)+max(all_df.anger))/3)]
+
+
+
+    if all(mood in selected for mood in ['relaxing','energetic'])|all(mood in selected for mood in ['angry','relaxing'])|all(mood in selected for mood in ['angry','dancing']) | all(mood in selected for mood in ['happy','sad'])| all(mood in selected for mood in ['happy','angry']):
+    resault=pd.DataFrame([])
+    st.write('not a good match')
+
+
+    if not resault.empty :
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write('list of the tracks:')
+        resault = resault.sort_values('popularity', ascending=False).drop_duplicates(subset=['title', 'artist_name']).reset_index(drop=True)
+        st.dataframe(resault.loc[:10,['title','popularity', 'artist_name']],width=500, height=450)
+    with col2:
+        st.write('click on each button to open the spotify page of the track:')
+        for i in range(11):
+        st.markdown(f'<a href="https://open.spotify.com/track/{resault.loc[i, "track_id"]}"><button>{resault.loc[i, "title"]}</button></a>', unsafe_allow_html=True)
+
+
 
 ################################### Create a dictionary to map page names to functions ###################################
 pages = {
