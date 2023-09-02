@@ -422,7 +422,100 @@ def popularity_followers_page():
 ################################### Factors Influencing Song Popularity (Definition of Criteria) ###################################
 def factors_influencing_song_popularity_page():
     st.subheader("Factors Influencing Song Popularity")
-    # Ali To Do
+    import streamlit as st
+import mysql.connector
+
+# Connect to the MySQL database
+def connect_to_db():
+    connection = mysql.connector.connect(
+        host="127.0.0.1",
+        port="3306",
+        user="root",
+        password="@Li_123456",
+        auth_plugin="mysql_native_password",
+        database="spotify"
+    )
+    return connection
+
+# Fetch all unique song titles from the database
+def fetch_all_unique_song_titles(connection):
+    query = """
+        SELECT DISTINCT title
+        FROM track_info
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        song_titles = [row[0] for row in cursor.fetchall()]
+    return song_titles
+
+# Fetch song features from the track_music table based on song title
+def fetch_song_features_by_title(connection, song_title):
+    query = """
+        SELECT danceability, loudness, energy, valence,
+               tempo, acoustics, instrumentalness
+        FROM track_music
+        WHERE track_id = (
+            SELECT track_id FROM track_info WHERE title = %s LIMIT 1
+        )
+    """
+    with connection.cursor(dictionary=True) as cursor:
+        cursor.execute(query, (song_title,))
+        song_features = cursor.fetchone()
+    return song_features
+
+# Determine if a song is popular based on its characteristics
+def is_song_popular(song_characteristics, avg_characteristics):
+    num_popular_criteria = 0
+    for characteristic, avg_value in avg_characteristics.items():
+        if song_characteristics[characteristic] > avg_value:
+            num_popular_criteria += 1
+    
+    # Define a threshold for the number of popular criteria
+    threshold = 3
+    
+    return num_popular_criteria >= threshold
+
+# Streamlit app
+def main():
+    connection = connect_to_db()
+
+    # Fetch all unique song titles from the database
+    all_unique_song_titles = fetch_all_unique_song_titles(connection)
+
+    if all_unique_song_titles:
+        # Calculate the average of each characteristic
+        avg_characteristics = {
+            "danceability": 0.702783,
+            "loudness": -5.65259,
+            "energy": 0.662133,
+            "valence": 0.527967,
+            "tempo": 117.00113,
+            "acoustics": 0.197693,
+            "instrumentalness": 0.161937
+        }
+
+        # Display the average characteristics
+        st.write("Average Characteristics for the First Hundred Songs:")
+        st.write(avg_characteristics)
+
+        # Get the song title from user input
+        song_title = st.selectbox("Select a song title:", all_unique_song_titles)
+
+        if song_title:
+            # Fetch the song features based on the provided song title
+            song_features = fetch_song_features_by_title(connection, song_title)
+
+            if song_features:
+                # Determine if the song is popular
+                is_popular = is_song_popular(song_features, avg_characteristics)
+
+                # Display the result
+                popularity_status = "popular" if is_popular else "not popular"
+                st.write(f"The song '{song_title}' is {popularity_status} based on the defined criteria.")
+
+if __name__ == "__main__":
+    main()
+
 
 ################################### Personalized Mood-Based Music Selection ###################################
 def song_suggestions_page():
