@@ -56,6 +56,11 @@ The following inquiries were systematically examined:
 - Scrutiny of the Ten Most Profoundly Expressive Lyricists in the Artistic Domain
 - Profiling the Annual Distribution of Artist Activity through the Aggregation of Total Song Counts
 - Delving into Musical Trends: An Appraisal of the Leading 10 Songs' Popularity, Both Explicit and Implicit in Content
+- The lyrical themes and content in rap music compared to other music genres
+- Exploring the Popularity of Explicit vs. Non-Explicit Songs: A Comparative Analysis
+- Examine the relationship between popularity and followers (Hypothesis Testing)
+- Factors Influencing Song Popularity (Definition of Criteria)
+- Personalized Mood-Based Music Selection
 
 Employing Streamlit and Plotly frameworks, we developed a user-friendly web application to visually present our data insights. To install the [Streamlit library](https://streamlit.io/) and [Plotly library](https://plotly.com/), just use these command in your command prompt:
 ```bash
@@ -68,6 +73,10 @@ pip install plotly
 Through the utilization of the MySQL connector library, we established direct connectivity to the database for efficient data retrieval, ensuring a seamless integration of information. To install the [mysql-connector library](https://dev.mysql.com/doc/connector-python/en/), just use this command in your command prompt:
 ```bash
 pip install mysql-connector-python
+```
+[statsmodels](https://www.statsmodels.org/stable/index.html) is a versatile Python library designed for statistical modeling and hypothesis testing. It empowers users to perform a wide range of statistical analyses, including linear and generalized linear regression, time series analysis, nonparametric methods, hypothesis testing, and survival analysis. With tools for modeling and interpreting data, statsmodels is invaluable in fields like statistics, economics, and data science, enabling professionals to estimate model parameters, assess goodness of fit, conduct hypothesis tests, and visualize results. Whether analyzing relationships between variables, conducting hypothesis tests, or working with time series data, statsmodels is a reliable choice for rigorous statistical analysis and inference. To install the [statsmodels library](https://pypi.org/project/statsmodels/), just use this command in your command prompt:
+```bash
+pip install statsmodels
 ```
 
 ## Prerequisites:
