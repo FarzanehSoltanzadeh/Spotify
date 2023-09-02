@@ -372,7 +372,12 @@ def explicit_non_explicit_comparison_page():
 ################################### Examine the relationship between popularity and followers (Hypothesis Testing) ###################################
 def popularity_followers_page():
     st.subheader("Analyzing the Relation Between Popularity and Followers: A Hypothesis Testing Approach")
-   
+    st.write("""
+            💢 In this section, we aim to analyze the relationship between an artist's number of followers and their level
+            of popularity. We have a hypothesis to investigate whether having more followers necessarily leads to greater 
+            popularity for an artist or not.
+             """)
+
     cursor.execute("SELECT * FROM spotify.artist")
     rows = cursor.fetchall()
     column_names = [column[0] for column in cursor.description]
@@ -400,9 +405,9 @@ def popularity_followers_page():
     st.write(f"Standard deviation of followers for non-popular artists: {std_non_popular}")
 
     # Create a scatter plot
-    fig = px.scatter(artist_df, x="popularity", y="followers", color="is_popular", color_discrete_sequence=["blue", "orange"])
-    fig.update_layout(title="Scatter Plot of Popularity vs. Followers")
-    st.plotly_chart(fig, use_container_width=True)
+    fig = px.scatter(artist_df, x = "popularity", y = "followers", color = "is_popular", color_discrete_sequence = ["blue", "orange"])
+    fig.update_layout(title = "Scatter Plot of Popularity vs. Followers")
+    st.plotly_chart(fig, use_container_width = True)
 
     st.markdown("""
         The scatter plot reveals some interesting patterns and insights about the data. Here are some of them:
@@ -416,263 +421,180 @@ def popularity_followers_page():
            They are exceptions to the general trend of the data, and they show that popularity and followers are not always proportional or linearly related.
 
         •  The popular artists have higher values of both followers and popularity than the non-popular artists. 
-
         """)
+    
+    st.markdown("<h2 style='color: red;'>Summary:</h2>", unsafe_allow_html = True)
+    st.write("""
+            In summary, while there is a discernible positive correlation between followers and popularity among artists, 
+             the relationship is not uniform, and there are notable exceptions. Popularity can be influenced by various factors 
+             beyond just the number of followers, such as the artist's talent, marketing strategies, and external events. Therefore, 
+             while having a large following can contribute to an artist's popularity, it is not the sole determinant, and individual 
+             circumstances play a crucial role in an artist's success in the music industry.
+             """)
  
 ################################### Factors Influencing Song Popularity (Definition of Criteria) ###################################
 def factors_influencing_song_popularity_page():
     st.subheader("Factors Influencing Song Popularity")
-    import streamlit as st
-import mysql.connector
 
-# Connect to the MySQL database
-def connect_to_db():
-    connection = mysql.connector.connect(
-        host="127.0.0.1",
-        port="3306",
-        user="root",
-        password="@Li_123456",
-        auth_plugin="mysql_native_password",
-        database="spotify"
-    )
-    return connection
-
-# Fetch all unique song titles from the database
-def fetch_all_unique_song_titles(connection):
+    st.write("""
+            In this part, our objective is to establish a set of criteria for determining if a song's popularity aligns
+              with the values we currently possess. We have identified seven key factors: danceability, loudness, energy, valence,
+              tempo, acousticness, and instrumentalness. Our approach involved calculating the average values of these factors for
+              the top 300 popular songs, and the results are displayed in the table below. \n\nNow, you can select a song, and if at least 
+             four of the mentioned factors exceed the corresponding averages from the table, we can categorize it as a popular song. 
+             In this classification, we won't give undue attention to other factors or the song's actual popularity value. Otherwise, 
+             it will be considered as not popular.
+             """)
+    
+    # Fetch all unique song titles
     query = """
         SELECT DISTINCT title
         FROM track_info
     """
-    with connection.cursor() as cursor:
+    with my_database.cursor() as cursor:
         cursor.execute(query)
-        song_titles = [row[0] for row in cursor.fetchall()]
-    return song_titles
+        all_unique_song_titles = [row[0] for row in cursor.fetchall()]
 
-# Fetch song features from the track_music table based on song title
-def fetch_song_features_by_title(connection, song_title):
-    query = """
-        SELECT danceability, loudness, energy, valence,
-               tempo, acoustics, instrumentalness
-        FROM track_music
-        WHERE track_id = (
-            SELECT track_id FROM track_info WHERE title = %s LIMIT 1
-        )
-    """
-    with connection.cursor(dictionary=True) as cursor:
-        cursor.execute(query, (song_title,))
-        song_features = cursor.fetchone()
-    return song_features
+    st.write("Average Characteristics for the First Hundred Songs:")
+    avg_characteristics = {
+        "danceability": 0.702783,
+        "loudness": -5.65259,
+        "energy": 0.662133,
+        "valence": 0.527967,
+        "tempo": 117.00113,
+        "acoustics": 0.197693,
+        "instrumentalness": 0.161937
+    }
+    # Convert the dictionary to a DataFrame
+    avg_characteristics_df = pd.DataFrame(list(avg_characteristics.items()), columns = ["Track Feature", "AVG Amount"])
+    st.dataframe(avg_characteristics_df)
+    # Select a song title
+    song_title = st.selectbox("Select a song title:", [None] + all_unique_song_titles)
 
-# Determine if a song is popular based on its characteristics
-def is_song_popular(song_characteristics, avg_characteristics):
-    num_popular_criteria = 0
-    for characteristic, avg_value in avg_characteristics.items():
-        if song_characteristics[characteristic] > avg_value:
-            num_popular_criteria += 1
-    
-    # Define a threshold for the number of popular criteria
-    threshold = 3
-    
-    return num_popular_criteria >= threshold
-
-# Streamlit app
-def main():
-    connection = connect_to_db()
-
-    # Fetch all unique song titles from the database
-    all_unique_song_titles = fetch_all_unique_song_titles(connection)
-
-    if all_unique_song_titles:
-        # Calculate the average of each characteristic
-        avg_characteristics = {
-            "danceability": 0.702783,
-            "loudness": -5.65259,
-            "energy": 0.662133,
-            "valence": 0.527967,
-            "tempo": 117.00113,
-            "acoustics": 0.197693,
-            "instrumentalness": 0.161937
-        }
-
-        # Display the average characteristics
-        st.write("Average Characteristics for the First Hundred Songs:")
-        st.write(avg_characteristics)
-
-        # Get the song title from user input
-        song_title = st.selectbox("Select a song title:", all_unique_song_titles)
-
-        if song_title:
-            # Fetch the song features based on the provided song title
-            song_features = fetch_song_features_by_title(connection, song_title)
+    if song_title:
+        if song_title is None:
+            st.write("Please select a song.")
+        else:
+            # Fetch song features by title
+            query = """
+                SELECT danceability, loudness, energy, valence,
+                    tempo, acoustics, instrumentalness
+                FROM track_music
+                WHERE track_id = (
+                    SELECT track_id FROM track_info WHERE title = %s LIMIT 1
+                )
+            """
+            with my_database.cursor(dictionary = True) as cursor:
+                cursor.execute(query, (song_title,))
+                song_features = cursor.fetchone()
 
             if song_features:
-                # Determine if the song is popular
-                is_popular = is_song_popular(song_features, avg_characteristics)
-
-                # Display the result
+                # Check if the song is popular
+                num_popular_criteria = 0
+                for characteristic, avg_value in avg_characteristics.items():
+                    if song_features[characteristic] > avg_value:
+                        num_popular_criteria += 1
+                threshold = 3
+                is_popular = num_popular_criteria >= threshold
                 popularity_status = "popular" if is_popular else "not popular"
-                st.write(f"The song '{song_title}' is {popularity_status} based on the defined criteria.")
+                st.write(f'🎼 The song "{song_title}" is {popularity_status} based on the defined criteria.')
 
-if __name__ == "__main__":
-    main()
-
+    st.markdown("<h2 style='color: red;'>Summary:</h2>", unsafe_allow_html = True)
+    st.write("""
+            To sum up, it's evident that focusing solely on musical factors can yield varying results when determining the popularity 
+             of a track. We can assert that other elements, such as the artist's influences, the lyrics, and their associated factors,
+              exert significant influence on a track's popularity. Relying solely on track-specific factors and information is 
+             insufficient for determining whether a song is popular or not.
+             """)
 
 ################################### Personalized Mood-Based Music Selection ###################################
 def song_suggestions_page():
     st.subheader("Song Recommendations 🎵")
     
-    cursor.execute('select * from track_lyric;')
+    st.write("""
+            In this section, you have the option to select from the available moods. Depending on your feelings, we will suggest
+              songs along with their Spotify links. You can choose more than one emotion, but please ensure that your selected moods
+              are not conflicting, such as both sad and happy.
+             """)
+
+    cursor.execute("select * from track_lyric;")
     track_lyric = cursor.fetchall()
     track_lyric = pd.DataFrame(track_lyric, columns = [column[0] for column in cursor.description])
-
-    cursor.execute('select * from track_info;')
+    cursor.execute("select * from track_info;")
     track_info = cursor.fetchall()
     track_info = pd.DataFrame(track_info, columns = [column[0] for column in cursor.description])
-
-    cursor.execute('select * from track_music;')
+    cursor.execute("select * from track_music;")
     track_music = cursor.fetchall()
     track_music = pd.DataFrame(track_music, columns = [column[0] for column in cursor.description])
-
-    cursor.execute('select * from artist;')
+    cursor.execute("select * from artist;")
     artist = cursor.fetchall()
     artist = pd.DataFrame(artist, columns = [column[0] for column in cursor.description])
-    artist.drop(columns=['popularity'],inplace=True)
+    artist.drop(columns = ["popularity"], inplace = True)
 
+    all_df = pd.merge(track_info, track_music, how = "inner", on = "track_id")
+    all_df = pd.merge(all_df, track_lyric, how = "inner", on = "track_id")
+    all_df = pd.merge(all_df, artist, how = "inner", on = "artist_id")
 
-    all_df=pd.merge(track_info,track_music,how='inner',on='track_id')
-    all_df=pd.merge(all_df,track_lyric,how='inner',on='track_id')
-    all_df=pd.merge(all_df,artist,how='inner',on='artist_id')
+    selected = st.multiselect("Please select your preferred mood(s):", ["sad", "happy", "relaxing", "energetic", "angry", "dancing"], placeholder = "Choose an option")
+    all_df = all_df[["track_id", "title", "artist_id", "artist_name", "popularity", "loudness", "danceability", "energy", "valence", "anger", "joy", "sadness", "negative", "positive"]]
+    all_df["loudness"] += np.abs(min(all_df["loudness"]))
+    x = all_df.mask(all_df.select_dtypes(include = np.number) < 0)
+    all_df.loc[:,"popularity":] = x
+    all_df = all_df.sort_values(by = "popularity", ascending = False).reset_index()
 
-    st.subheader('choose your mood, listen to the songs')
-    selected=st.multiselect('choose you mood(s):', ['sad','happy','relaxing','energetic','angry','dancing'], placeholder="Choose an option")
+    result = pd.DataFrame([])
+    if all(mood in selected for mood in ["dancing", "happy", "energetic"]):
+        result = all_df.loc[(all_df.danceability >= (min(all_df.danceability) + max(all_df.danceability)) / 2) & (all_df.valence >= (min(all_df.valence) + max(all_df.valence)) / 2) & (all_df.joy >= (min(all_df.joy) + max(all_df.joy)) / 3.5) & (all_df.positive >= (min(all_df.positive) + max(all_df.positive)) / 5) & (all_df.energy >= (min(all_df.energy) + max(all_df.energy)) / 2)]
+    elif all(mood in selected for mood in ["dancing", "happy", "relaxing"]):
+        result = all_df.loc[((all_df.danceability >= (min(all_df.danceability) + max(all_df.danceability)) / 1.5) & (all_df.valence >= (min(all_df.valence) + max(all_df.valence)) / 2) & (all_df.joy >= (min(all_df.joy) + max(all_df.joy)) / 3.5) & (all_df.positive >= (min(all_df.positive) + max(all_df.positive)) / 5) & (all_df.loudness <= np.median(all_df.loudness)) & all_df.energy <= (min(all_df.energy) + max(all_df.energy)) / 1.2)]
+    elif all(mood in selected for mood in ["sad", "energetic", "angry"]):
+        result = all_df.loc[(all_df.negative >= (min(all_df.negative) + max(all_df.negative)) / 4) & (all_df.sadness >= (min(all_df.sadness) + max(all_df.sadness)) / 4) & (all_df.anger >= (min(all_df.anger) + max(all_df.anger)) / 4) & (all_df.energy >= (min(all_df.energy) + max(all_df.energy)) / 1.2)]
+    elif all(mood in selected for mood in ["sad", "relaxing", "angry"]):
+        result = all_df.loc[(all_df.negative >= (min(all_df.negative) + max(all_df.negative)) / 4) & (all_df.sadness >= (min(all_df.sadness) + max(all_df.sadness)) / 4) & (all_df.anger >= (min(all_df.anger) + max(all_df.anger)) / 4) & (all_df.loudness <= 19) & (all_df.energy <= (min(all_df.energy) + max(all_df.energy)) / 1.2)]
+    elif all(mood in selected for mood in ["sad", "energetic"]):
+        result = all_df.loc[(all_df.negative >= (min(all_df.negative) + max(all_df.negative)) / 4) & (all_df.sadness >= (min(all_df.sadness) + max(all_df.sadness)) / 3) & (all_df.energy >= (min(all_df.energy) + max(all_df.energy)) / 1.5)]
+    elif all(mood in selected for mood in ["sad", "dancing"]):
+        result = all_df.loc[(all_df.negative >= (min(all_df.negative) + max(all_df.negative)) / 4) & (all_df.sadness >= (min(all_df.sadness) + max(all_df.sadness)) / 3) & (all_df.danceability >= (min(all_df.danceability) + max(all_df.danceability)) / 1.2)]
+    elif all(mood in selected for mood in ["angry", "energetic"]):
+        result = all_df.loc[(all_df.anger >= (min(all_df.anger) + max(all_df.anger)) / 3) & (all_df.loudness >= 20) & (all_df.energy >= (min(all_df.energy) + max(all_df.energy)) / 1.5)]
+    elif all(mood in selected for mood in ["sad", "relaxing"]):
+        result = all_df.loc[(all_df.negative >= (min(all_df.negative) + max(all_df.negative)) / 4) & (all_df.sadness >= (min(all_df.sadness) + max(all_df.sadness)) / 4) & (all_df.loudness <= 19) & (all_df.energy <= (min(all_df.energy) + max(all_df.energy)) / 3)]
+    elif all(mood in selected for mood in ["sad", "angry"]):
+        result = all_df.loc[(all_df.negative >= (min(all_df.negative) + max(all_df.negative)) / 3) & (all_df.sadness >= (min(all_df.sadness) + max(all_df.sadness)) / 1.5) & (all_df.anger >= (min(all_df.anger) + max(all_df.anger)) / 1.5)]
+    elif all(mood in selected for mood in ["dancing", "happy"]):
+        result = all_df.loc[(all_df.danceability >= (min(all_df.danceability) + max(all_df.danceability)) / 1.2) & (all_df.valence >= (min(all_df.valence) + max(all_df.valence)) / 1.5) & (all_df.joy >= (min(all_df.joy) + max(all_df.joy)) / 3.5) & (all_df.positive >= (min(all_df.positive) + max(all_df.positive)) / 5)]
+    elif all(mood in selected for mood in ["energetic", "happy"]):
+        result = all_df.loc[(all_df.valence >= (min(all_df.valence) + max(all_df.valence)) / 2) & (all_df.joy >= (min(all_df.joy) + max(all_df.joy)) / 3) & (all_df.positive >= (min(all_df.positive) + max(all_df.positive)) / 5) & (all_df.energy >= (min(all_df.energy) + max(all_df.energy)) / 1.2)]
+    elif all(mood in selected for mood in ["relaxing", "happy"]):
+        result = all_df.loc[(all_df.valence >= (min(all_df.valence) + max(all_df.valence)) / 1.5) & (all_df.joy >= (min(all_df.joy) + max(all_df.joy)) / 3) & (all_df.positive >= (min(all_df.positive) + max(all_df.positive)) / 5) & (all_df.loudness <= 19) & (all_df.energy <= (min(all_df.energy) + max(all_df.energy)) / 2)]
+    elif all(mood in selected for mood in ["relaxing", "dancing"]):
+        result = all_df.loc[(all_df.danceability >= (min(all_df.danceability) + max(all_df.danceability)) / 1.5) & (all_df.loudness < 15) & (all_df.energy <= (min(all_df.energy) + max(all_df.energy)) / 4)]
+    elif "sad" in selected:
+        result = all_df.loc[(all_df.negative >= (min(all_df.negative) + max(all_df.negative)) / 3) & (all_df.sadness >= (min(all_df.sadness) + max(all_df.sadness)) / 2)]
+    elif "happy" in selected:
+        result = all_df.loc[(all_df.valence >= (min(all_df.valence) + max(all_df.valence)) / 2) & (all_df.joy >= (min(all_df.joy) + max(all_df.joy)) / 2.5) & (all_df.positive >= (min(all_df.positive) + max(all_df.positive)) / 3)]
+    elif "relaxing" in selected:
+        result = all_df.loc[(all_df.loudness < 15) & (all_df.energy <= (min(all_df.energy) + max(all_df.energy)) / 4)]
+    elif "energetic" in selected:
+        result = all_df.loc[(all_df.energy >= (min(all_df.energy) + max(all_df.energy)) / 1.2)]
+    elif "dancing" in selected:
+        result = all_df.loc[(all_df.danceability >= (min(all_df.danceability) + max(all_df.danceability)) / 2)]
+    elif "angry" in selected:
+        result = all_df.loc[(all_df.anger >= (min(all_df.anger) + max(all_df.anger)) / 3)]
+    if all(mood in selected for mood in ["relaxing", "energetic"]) | all(mood in selected for mood in ["angry", "relaxing"]) | all(mood in selected for mood in ["angry", "dancing"]) | all(mood in selected for mood in ["happy", "sad"]) | all(mood in selected for mood in ["happy", "angry"]):
+        result = pd.DataFrame([])
+        st.write("Your selected moods exhibit a striking contrast!")
 
-    all_df=all_df[['track_id','title','artist_id','artist_name','popularity','loudness','danceability','energy','valence','anger','joy','sadness','negative','positive']]
-    all_df['loudness']+=np.abs(min(all_df['loudness']))
-    x=all_df.mask(all_df.select_dtypes(include=np.number) < 0)
-    all_df.loc[:,'popularity':]=x
-    all_df=all_df.sort_values(by='popularity',ascending=False).reset_index()
-
-
-    resault=pd.DataFrame([])
-    if all(mood in selected for mood in ['dancing', 'happy','energetic']):
-    resault=all_df.loc[(all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/2) & 
-    (all_df.valence>=(min(all_df.valence)+max(all_df.valence))/2) & 
-    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/3.5) & 
-    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/5) &
-    (all_df.energy>=(min(all_df.energy)+max(all_df.energy))/2)]
-
-    elif all(mood in selected for mood in ['dancing', 'happy','relaxing']):
-    resault=all_df.loc[(all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/1.5) & 
-    (all_df.valence>=(min(all_df.valence)+max(all_df.valence))/2) & 
-    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/3.5) & 
-    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/5) &
-    (all_df.loudness<=np.median(all_df.loudness)) &
-    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/1.2)]
-
-    elif all(mood in selected for mood in ['sad','energetic','angry']):
-    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/4) & 
-    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/4) & 
-    (all_df.anger>=(min(all_df.anger)+max(all_df.anger))/4) &
-    (all_df.energy>=(min(all_df.energy)+max(all_df.energy))/1.2)]
-
-    elif all(mood in selected for mood in ['sad','relaxing','angry']):
-    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/4) & 
-    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/4) &  
-    (all_df.anger>=(min(all_df.anger)+max(all_df.anger))/4) &
-    (all_df.loudness<=19) &
-    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/1.2)]
-
-    elif all(mood in selected for mood in ['sad','energetic']):
-    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/4) & 
-    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/3) & 
-    (all_df.energy>=(min(all_df.energy)+max(all_df.energy))/1.5)]
-
-    elif all(mood in selected for mood in ['sad','dancing']):
-    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/4) & 
-    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/3) & 
-    (all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/1.2)]
-
-    elif all(mood in selected for mood in ['angry','energetic']):
-    resault=all_df.loc[(all_df.anger>=(min(all_df.anger)+max(all_df.anger))/3) & 
-    (all_df.loudness>=20) &
-    (all_df.energy>=(min(all_df.energy)+max(all_df.energy))/1.5)]
-
-    elif all(mood in selected for mood in ['sad','relaxing']):
-    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/4) & 
-    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/4) &  
-    (all_df.loudness<=19) &
-    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/3)]
-
-    elif all(mood in selected for mood in ['sad','angry']):
-    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/3) & 
-    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/1.5) &  
-    (all_df.anger>=(min(all_df.anger)+max(all_df.anger))/1.5)]
-
-    elif all(mood in selected for mood in ['dancing', 'happy']):
-    resault=all_df.loc[(all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/1.2) & 
-    (all_df.valence>=(min(all_df.valence)+max(all_df.valence))/1.5) & 
-    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/3.5) & 
-    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/5)]
-
-    elif all(mood in selected for mood in ['energetic','happy']):
-    resault=all_df.loc[(all_df.valence>=(min(all_df.valence)+max(all_df.valence))/2) & 
-    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/3) & 
-    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/5) &
-    (all_df.energy>=(min(all_df.energy)+max(all_df.energy))/1.2)]
-
-    elif all(mood in selected for mood in ['relaxing','happy']):
-    resault=all_df.loc[(all_df.valence>=(min(all_df.valence)+max(all_df.valence))/1.5) & 
-    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/3) & 
-    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/5) &
-    (all_df.loudness<=19) &
-    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/2)]
-
-    elif all(mood in selected for mood in ['relaxing','dancing']):
-    resault=all_df.loc[(all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/1.5) & 
-    (all_df.loudness<15) &
-    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/4)]
-
-    elif 'sad' in selected:
-    resault=all_df.loc[(all_df.negative>=(min(all_df.negative)+max(all_df.negative))/3) & 
-    (all_df.sadness>=(min(all_df.sadness)+max(all_df.sadness))/2)]
-
-    elif 'happy' in selected:
-    resault=all_df.loc[(all_df.valence>=(min(all_df.valence)+max(all_df.valence))/2) & 
-    (all_df.joy>=(min(all_df.joy)+max(all_df.joy))/2.5) & 
-    (all_df.positive>=(min(all_df.positive)+max(all_df.positive))/3)]
-
-    elif 'relaxing' in selected:
-    resault=all_df.loc[(all_df.loudness<15) &
-    (all_df.energy<=(min(all_df.energy)+max(all_df.energy))/4)]
-
-    elif 'energetic' in selected:
-    resault=all_df.loc[(all_df.energy>=(min(all_df.energy)+max(all_df.energy))/1.2)]
-
-    elif 'dancing' in selected:
-    resault=all_df.loc[(all_df.danceability>=(min(all_df.danceability)+max(all_df.danceability))/2)]
-
-    elif 'angry' in selected:
-    resault=all_df.loc[(all_df.anger>=(min(all_df.anger)+max(all_df.anger))/3)]
-
-
-
-    if all(mood in selected for mood in ['relaxing','energetic'])|all(mood in selected for mood in ['angry','relaxing'])|all(mood in selected for mood in ['angry','dancing']) | all(mood in selected for mood in ['happy','sad'])| all(mood in selected for mood in ['happy','angry']):
-    resault=pd.DataFrame([])
-    st.write('not a good match')
-
-
-    if not resault.empty :
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write('list of the tracks:')
-        resault = resault.sort_values('popularity', ascending=False).drop_duplicates(subset=['title', 'artist_name']).reset_index(drop=True)
-        st.dataframe(resault.loc[:10,['title','popularity', 'artist_name']],width=500, height=450)
-    with col2:
-        st.write('click on each button to open the spotify page of the track:')
-        for i in range(11):
-        st.markdown(f'<a href="https://open.spotify.com/track/{resault.loc[i, "track_id"]}"><button>{resault.loc[i, "title"]}</button></a>', unsafe_allow_html=True)
-
-
+    if not result.empty:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write("Here is a selection of recommended tracks:")
+            result = result.sort_values("popularity", ascending = False).drop_duplicates(subset = ["title", "artist_name"]).reset_index(drop = True)
+            st.dataframe(result.loc[:10,["title", "popularity", "artist_name"]], width = 500, height = 450)
+        with col2:
+            st.write("Click on each button to access the Spotify page for the respective track:")
+            for i in range(11):
+                st.markdown(f'<a href="https://open.spotify.com/track/{result.loc[i, "track_id"]}"><button>{result.loc[i, "title"]}</button></a>', unsafe_allow_html = True)
 
 ################################### Create a dictionary to map page names to functions ###################################
 pages = {
