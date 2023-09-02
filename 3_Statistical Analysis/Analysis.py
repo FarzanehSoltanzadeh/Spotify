@@ -218,38 +218,36 @@ def artist_activity_through_years_page():
     st.plotly_chart(fig, use_container_width = True)
 
 ################################### Exploring Music Trends: Top 10 Popular Songs with and without Explicit Content ###################################
-def top_ten_explicit_non_explicit_page():
-    def get_popular_songs(explicit):
-        cursor = my_database.cursor()
-        explicit_value = 1 if explicit else 0
-        query = f"""
-            SELECT ti.track_id, ti.title, ti.popularity, ti.explicit
-            FROM track_info ti
-            WHERE ti.explicit = {explicit_value}
-            ORDER BY ti.popularity DESC
-            LIMIT 10
-        """
-        cursor.execute(query)
-        songs = cursor.fetchall()
-        cursor.close()
-        return songs
-
-    st.subheader("Top 10 Popular Songs with and without Explicit Content")
-    song_type = st.radio("Select Song Type", ("Explicit Songs", "Non-Explicit Songs"))
-
-    if song_type == "Explicit Songs":
-        songs = get_popular_songs(True)
-        st.subheader("Top 10 Popular Explicit Songs")
-    elif song_type == "Non-Explicit Songs":
-        songs = get_popular_songs(False)
-        st.subheader("Top 10 Popular Non-Explicit Songs")
-
-    song_data = pd.DataFrame(songs, columns = ["Track ID", "Title", "Popularity", "Explicit"])
-    total_popularity = song_data["Popularity"].sum()
-    song_data["Popularity_Percentage"] = (song_data["Popularity"] / total_popularity) * 100
-
-    fig = go.Figure(data=[go.Bar(x = song_data["Title"], y = song_data["Popularity_Percentage"], text = song_data["Popularity"], textposition = "outside", marker = dict(color = px.colors.sequential.Reds, colorscale = "Viridis"),)])
-    fig.update_layout(xaxis_title = "Title", yaxis_title = "Popularity", title = "Popularity Percentage of Songs", xaxis_tickangle = -45, width = 800, height = 600,)
+def top_ten_explicit_non_explicit_page(): 
+    def get_popular_songs(explicit): 
+        cursor = my_database.cursor() 
+        explicit_value = 1 if explicit else 0 
+        query = f""" 
+            SELECT ti.track_id, ti.title, ti.popularity, ti.explicit 
+            FROM track_info ti 
+            WHERE ti.explicit = {explicit_value} 
+            ORDER BY ti.popularity DESC 
+            LIMIT 10 
+        """ 
+        cursor.execute(query) 
+        songs = cursor.fetchall() 
+        cursor.close() 
+        return songs 
+ 
+    st.subheader("Top 10 Popular Songs with and without Explicit Content") 
+    song_type = st.radio("Select Song Type", ("Explicit Songs", "Non-Explicit Songs")) 
+ 
+    if song_type == "Explicit Songs": 
+        songs = get_popular_songs(True) 
+        st.subheader("Top 10 Popular Explicit Songs") 
+    elif song_type == "Non-Explicit Songs": 
+        songs = get_popular_songs(False) 
+        st.subheader("Top 10 Popular Non-Explicit Songs") 
+ 
+    song_data = pd.DataFrame(songs, columns = ["Track ID", "Title", "Popularity", "Explicit"]) 
+ 
+    fig = go.Figure(data = [go.Bar(x = song_data["Title"], y = song_data["Popularity"], text = song_data["Popularity"], textposition = "outside", marker = dict(color = px.colors.sequential.Reds, colorscale = "Viridis"),)]) 
+    fig.update_layout(xaxis_title = "Title", yaxis_title = "Popularity", title = "Popularity of Songs", xaxis_tickangle = -45, width = 800, height = 600,) 
     st.plotly_chart(fig, use_container_width = True)
 
 ################################### The lyrical themes and content in rap music compared to other music genres ###################################
@@ -373,9 +371,54 @@ def explicit_non_explicit_comparison_page():
 
 ################################### Examine the relationship between popularity and followers (Hypothesis Testing) ###################################
 def popularity_followers_page():
-    st.subheader("Analyzing the Correlation Between Popularity and Followers: A Hypothesis Testing Approach")
-    # Farzaneh To Do
+    st.subheader("Analyzing the Relation Between Popularity and Followers: A Hypothesis Testing Approach")
+   
+    cursor.execute("SELECT * FROM spotify.artist")
+    rows = cursor.fetchall()
+    column_names = [column[0] for column in cursor.description]
+    artist_df = pd.DataFrame(rows, columns = column_names)
+    
+    st.write("Correlation of popularity and followers:")
+    st.dataframe(artist_df[["popularity", "followers"]].corr())
+    st.write("""
+             Table shows that the correlation between popularity and followers is 0.376, 
+             which is close to 0.4. This indicates a weak positive correlation, meaning that as popularity increases, 
+             followers also tend to increase slightly, but not very strongly. This suggests that there are other factors 
+             that influence the number of followers besides popularity, such as genre, style, or marketing.
+             """)
 
+    artist_df["is_popular"] = np.where(artist_df["popularity"] >= 70, True, False)
+
+    # Calculate the mean and standard deviation of followers for each group
+    mean_popular = artist_df[artist_df["is_popular"] == True]["followers"].mean()
+    std_popular = artist_df[artist_df["is_popular"] == True]["followers"].std()
+    mean_non_popular = artist_df[artist_df["is_popular"] == False]["followers"].mean()
+    std_non_popular = artist_df[artist_df["is_popular"] == False]["followers"].std()
+    st.write(f"Mean followers for popular artists: {mean_popular}")
+    st.write(f"Mean followers for non-popular artists: {mean_non_popular}")
+    st.write(f"Standard deviation of followers for popular artists: {std_popular}")
+    st.write(f"Standard deviation of followers for non-popular artists: {std_non_popular}")
+
+    # Create a scatter plot
+    fig = px.scatter(artist_df, x="popularity", y="followers", color="is_popular", color_discrete_sequence=["blue", "orange"])
+    fig.update_layout(title="Scatter Plot of Popularity vs. Followers")
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("""
+        The scatter plot reveals some interesting patterns and insights about the data. Here are some of them:
+
+        •  There is a positive correlation between followers and popularity, meaning that as popularity increases, followers also tend to increase. 
+           This makes sense, as more popular artists are likely to have more exposure and fan base. However, the correlation is not very strong, 
+           as there is a lot of variation and outliers in the data. The correlation coefficient is 0.376, which is close to 0.4. This indicates a weak positive correlation.
+                
+        •  There are some outliers on the plot, especially on the upper right corner. These are the artists that have very high values of both followers and popularity, 
+           such as Ed Sheeran, Drake, Ariana Grande, and BTS. These are some of the most famous and successful artists in the world, and they have millions of loyal fans and listeners. 
+           They are exceptions to the general trend of the data, and they show that popularity and followers are not always proportional or linearly related.
+
+        •  The popular artists have higher values of both followers and popularity than the non-popular artists. 
+
+        """)
+ 
 ################################### Factors Influencing Song Popularity (Definition of Criteria) ###################################
 def factors_influencing_song_popularity_page():
     st.subheader("Factors Influencing Song Popularity")
