@@ -128,6 +128,30 @@ def popular_artists_by_genre_page():
         st.write(f"Most popular artists in {genre_selected} genre:")
         st.bar_chart(top_10_artists[["artist_name", "popularity"]].set_index("artist_name"))
 
+################################### Exploring the Top 5 Most Popular Artists by Subgenre ###################################
+def popular_artists_by_sub_genre_page():
+    query = """
+        SELECT artist.artist_name, artist.popularity, track_info.title, subgenre.subgenre_name
+        FROM artist JOIN track_info ON track_info.artist_id = artist.artist_id JOIN subgenre ON track_info.subgenre_id = subgenre.subgenre_id;
+    """
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    column_names = [column[0] for column in cursor.description]
+    artist_Subgenre_popularityBased = pd.DataFrame(rows, columns = column_names)
+
+    st.subheader("Top 5 Most Popular Artists by Subgenre")
+
+    unique_subgenres_list = list(artist_Subgenre_popularityBased["subgenre_name"].unique())
+    selected_subgenre = st.selectbox("Select a Subgenre", ["None"] + unique_subgenres_list)
+
+    if selected_subgenre != "None":
+        filtered_df = artist_Subgenre_popularityBased[artist_Subgenre_popularityBased["subgenre_name"] == selected_subgenre]
+        top_artists = filtered_df.sort_values(by = "popularity", ascending = False).head(5)
+        custom_color_scale = px.colors.qualitative.Set1
+        fig = px.bar(top_artists, x = "artist_name", y = "popularity", title = f"Top 5 Most Popular Artists in {selected_subgenre}", color = "artist_name", color_discrete_sequence = custom_color_scale)
+        fig.update_traces(showlegend = False)
+        st.plotly_chart(fig)
+
 ################################### Exploring Beloved Albums: A Comparative Analysis of Five Notable Releases in the Year ###################################
 def top_albums_by_year_page():
     query = """
@@ -602,6 +626,7 @@ pages = {
     "Popular Genres": popular_genres_page,
     "Top 10 Tracks in Various Genres": popular_tracks_in_different_genres_page,
     "Top 10 Artists in Each Genre": popular_artists_by_genre_page,
+    "Top 5 Artists in Each Subgenre": popular_artists_by_sub_genre_page,
     "Top 5 Albums Based on the Year": top_albums_by_year_page,
     "Top 10 Artists with Emotional Lyrics": artists_with_emotional_lyrics_page,
     "Artist Activity Through the Years": artist_activity_through_years_page,
@@ -610,7 +635,7 @@ pages = {
     "Comparing the Popularity of Explicit and Non-Explicit Songs": explicit_non_explicit_comparison_page,
     "Relationship Between Popularity and Followers": popularity_followers_page,
     "What Drives a Song's Success": factors_influencing_song_popularity_page,
-    "Customized Mood-Driven Music Selection ": song_suggestions_page
+    "Customized Mood-Driven Music Selection": song_suggestions_page
 }
 
 ################################### Add a sidebar to select the page ###################################
