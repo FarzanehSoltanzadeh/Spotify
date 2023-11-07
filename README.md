@@ -5,8 +5,6 @@ Explore the rich tapestry of music through our in-depth analysis of Spotify data
 
 In our initial phase, we kickstarted our analysis with the [dataset](https://www.kaggle.com/datasets/nicholaselkan/spotify) sourced from [Kaggle](https://www.kaggle.com/). As our exploration deepened, it became apparent that further data enrichment was necessary. Consequently, we employed the [Spotify](https://open.spotify.com/) library in Python, enabling us to extract comprehensive artist and album information.
 
-*Please note that our dataset exclusively comprises the top 200 songs from each day in 2020 across 35 different countries. All the data analyses and insights we present are rooted in this comprehensive dataset, offering a thorough examination of music trends and patterns during that specific year and across diverse geographical regions.*
-
 The dataset acquired through the utilization of the Spotify library encompasses the following components:
 ```
 Artists Information
@@ -50,11 +48,12 @@ This analytical stage was aimed at extracting meaningful insights and enhancing 
 
 The following inquiries were systematically examined:
 
-- Investigation of the Top Five Albums of Each Artist Based on Popularity
+- Investigation of the Top 5 Albums of Each Artist Based on Popularity
 - Examination of Popular Literary Genres: Patterns and Influences
+- Identifying the Top 5 Popular Artists within Each Subgenre
 - A Comparative Study of the Top 10 Chart-Topping Songs across Distinct Musical Categories
 - Exploration of the Top 10 Most Popular Artists Segregated by Genre
-- Comparative Analysis of Noteworthy Album Releases: Unveiling Distinctive Attributes of Five Select Albums from the Current Year
+- Comparative Analysis of Noteworthy Album Releases: Unveiling Distinctive Attributes of 5 Select Albums from the Current Year
 - Scrutiny of the Ten Most Profoundly Expressive Lyricists in the Artistic Domain
 - Profiling the Annual Distribution of Artist Activity through the Aggregation of Total Song Counts
 - Delving into Musical Trends: An Appraisal of the Leading 10 Songs' Popularity, Both Explicit and Implicit in Content
@@ -80,6 +79,35 @@ pip install mysql-connector-python
 ```bash
 pip install statsmodels
 ```
+
+## PHASE FOUR: **Predictive Modeling and Machine Learning**
+
+In this section, we leveraged a variety of machine learning techniques to gain valuable insights from Spotify data. Our approach included both supervised learning, with regression and classification methods, and unsupervised learning, particularly clustering. We employed specific models such as linear regression and random forest for the following key objectives:
+
+- Predicting Artist Popularity through Regression Analysis
+- Genre-Based Track Classification Analysis
+- Mood-Driven Track Classification through Lyric Analysis
+- Track Clustering using K-Means Analysis
+- Predicting Track Popularity through Regression Analysis
+
+This comprehensive approach allowed us to extract meaningful information and enhance our understanding of the Spotify dataset.
+
+For our supervised learning tasks, we harnessed the power of the [scikit-learn](https://scikit-learn.org/stable/) library, enabling us to employ linear regression and random forest models for classification. Additionally, our unsupervised learning efforts, particularly K-Means clustering, were made possible through the utilization of the [kmodes](https://pypi.org/project/kmodes/) library. To install these essential libraries, simply execute the following commands in your command prompt:
+```bash
+pip install scikit-learn
+```
+```bash
+pip install kmodes
+```
+
+## PHASE FIVE: **Visualization and Business Insights in Power BI**
+
+In the fifth and final phase, we employed Power BI to craft a comprehensive dashboard. This dashboard served as the culmination of our efforts, providing a visual representation of our findings. Through these visualizations, we aimed to enhance our understanding of the Spotify data and offer a more intuitive and insightful presentation of our results.
+
+
+
+
+
 
 ## Prerequisites:
 Prior to engaging with the content and materials presented in this repository, a foundational set of prerequisites should be fulfilled. These prerequisites have been identified to ensure a seamless and productive interaction with the project environment. The following steps are recommended:
@@ -112,6 +140,18 @@ pip install pandas
 - [NumPy](https://numpy.org/)
 ```bash
 pip install numpy
+```
+- [Matplotlib](https://matplotlib.org/)
+```bash
+pip install matplotlib
+```
+- [seaborn](https://seaborn.pydata.org/)
+```bash
+pip install seaborn
+```
+- [SciPy](https://scipy.org/)
+```bash
+pip install scipy
 ```
 ## Authors
 
