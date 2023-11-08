@@ -5,6 +5,8 @@ Explore the rich tapestry of music through our in-depth analysis of Spotify data
 
 In our initial phase, we kickstarted our analysis with the [dataset](https://www.kaggle.com/datasets/nicholaselkan/spotify) sourced from [Kaggle](https://www.kaggle.com/). As our exploration deepened, it became apparent that further data enrichment was necessary. Consequently, we employed the [Spotify](https://open.spotify.com/) library in Python, enabling us to extract comprehensive artist and album information.
 
+*Please note that our dataset exclusively comprises the top 200 songs from each day from 2017 to 2020, across 35 different countries. All the data analyses and insights we present are rooted in this comprehensive dataset, offering a thorough examination of music trends and patterns during that specific year and across diverse geographical regions.*
+
 The dataset acquired through the utilization of the Spotify library encompasses the following components:
 ```
 Artists Information
