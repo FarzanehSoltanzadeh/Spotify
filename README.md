@@ -107,8 +107,7 @@ pip install kmodes
 In the fifth and final phase, we employed Power BI to craft a comprehensive dashboard. This dashboard served as the culmination of our efforts, providing a visual representation of our findings. Through these visualizations, we aimed to enhance our understanding of the Spotify data and offer a more intuitive and insightful presentation of our results.
 
 
-
-
+![PowerBI](https://github.com/FarzanehSoltanzadeh/Spotify/raw/main/assets/108691050/769ecf9e-0fe3-460b-bdc3-b5db9f66cd63)
 
 
 ## Prerequisites:
