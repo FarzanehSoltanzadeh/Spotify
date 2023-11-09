@@ -112,7 +112,7 @@ In the fifth and final phase, we employed Power BI to craft a comprehensive dash
 
 <img width="1005" alt="PowerBI" src="https://github.com/FarzanehSoltanzadeh/Spotify/assets/108691050/71829039-c24d-4d0e-b05b-afc975e23b05">
 
-**Please be aware that the file size exceeded the limit allowed for GitHub uploads. To address this, the file has been compressed into two RAR archives. Utilize WinRAR to extract both parts simultaneously, revealing the consolidated Power BI file and enabling access to the dashboard.**
+**Please be aware that the file size exceeded the limit allowed for GitHub uploads. To address this, the file has been compressed into two RAR archives. Utilize [WinRAR](https://www.win-rar.com/start.html?&L=0) to extract both parts simultaneously, revealing the consolidated Power BI file and enabling access to the dashboard.**
 
 
 ## Prerequisites:
