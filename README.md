@@ -1,6 +1,9 @@
 #  Analyzing Spotify Data: A Comprehensive Data Analysis
 
 Explore the rich tapestry of music through our in-depth analysis of Spotify data, unveiling hidden insights and trends at the intersection of data science and music appreciation.
+
+![Spotify](https://img.shields.io/badge/Spotify-1ED760?style=for-the-badge&logo=spotify&logoColor=white)
+
 ## PHASE ONE: **Data Collection and Preparation**
 
 In our initial phase, we kickstarted our analysis with the [dataset](https://www.kaggle.com/datasets/nicholaselkan/spotify) sourced from [Kaggle](https://www.kaggle.com/). As our exploration deepened, it became apparent that further data enrichment was necessary. Consequently, we employed the [Spotify](https://open.spotify.com/) library in Python, enabling us to extract comprehensive artist and album information.
